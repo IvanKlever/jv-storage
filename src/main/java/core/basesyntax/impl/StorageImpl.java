@@ -14,18 +14,30 @@ public class StorageImpl<K, V> implements Storage<K, V> {
         size = 0;
     }
 
-    @Override
-    public void put(K key, V value) {
+    private int getIndex(K key) {
         for (int i = 0; i < size; i++) {
             if ((key == null && this.keys[i] == null)
                     || (this.keys[i] != null && this.keys[i].equals(key))) {
-                this.values[i] = value;
-                return;
+                return i;
             }
         }
-        if (size < this.keys.length) {
-            this.keys[size] = key;
-            this.values[size] = value;
+        return -1;
+    }
+
+    @Override
+    public void put(K key, V value) {
+        int index = getIndex(key);
+
+        if (index != -1) {
+            // ключ уже есть → обновляем
+            values[index] = value;
+            return;
+        }
+
+        // ключа нет → добавляем
+        if (size < keys.length) {
+            keys[size] = key;
+            values[size] = value;
             size++;
         } else {
             System.out.println("The storage is full");
@@ -34,13 +46,8 @@ public class StorageImpl<K, V> implements Storage<K, V> {
 
     @Override
     public V get(K key) {
-        for (int i = 0; i < size; i++) {
-            if ((key == null && this.keys[i] == null)
-                    || (this.keys[i] != null && this.keys[i].equals(key))) {
-                return this.values[i];
-            }
-        }
-        return null;
+        int index = getIndex(key);
+        return index == -1 ? null : values[index];
     }
 
     @Override
